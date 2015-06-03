@@ -23,7 +23,8 @@ import hashlib
 import pymongo
 
 
-# The User Data Access Object handles all interactions with the User collection.
+# The User Data Access Object handles all
+# interactions with the User collection.
 class UserDAO:
 
     def __init__(self, db):
@@ -33,29 +34,23 @@ class UserDAO:
 
     # makes a little salt
     def make_salt(self):
-        salt = ""
-        for i in range(5):
-            salt = salt + random.choice(string.ascii_letters)
-        return salt
+        return ''.join(
+            [random.choice(string.ascii_letters) for i in xrange(5)])
 
-    # implement the function make_pw_hash(name, pw) that returns a hashed password
-    # of the format:
+    # implement the function make_pw_hash(name, pw)
+    # that returns a hashed password of the format:
     # HASH(pw + salt),salt
     # use sha256
-
-    def make_pw_hash(self, pw,salt=None):
-        if salt == None:
-            salt = self.make_salt();
-        return hashlib.sha256(pw + salt).hexdigest()+","+ salt
+    def make_pw_hash(self, pw, salt=None):
+        if salt is None:
+            salt = self.make_salt()
+        return ','.join([hashlib.sha256(pw + salt).hexdigest(), salt])
 
     # Validates a user login. Returns user record or None
     def validate_login(self, username, password):
-
         user = None
         try:
-            # XXX HW 2.3 Students Work Here
-            # you will need to retrieve right document from the users collection.
-            print "This space intentionally left blank."
+            user = self.db.users.find_one({'_id': username})
         except:
             print "Unable to query database for user"
 
@@ -63,7 +58,7 @@ class UserDAO:
             print "User not in database"
             return None
 
-        salt = user['password'].split(',')[1]
+        salt = user['password'].split(',')[-1]
 
         if user['password'] != self.make_pw_hash(password, salt):
             print "user password is not a match"
@@ -72,23 +67,19 @@ class UserDAO:
         # Looks good
         return user
 
-
     # creates a new user in the users collection
     def add_user(self, username, password, email):
         password_hash = self.make_pw_hash(password)
 
         user = {'_id': username, 'password': password_hash}
-        if email != "":
+        if email:
             user['email'] = email
 
         try:
-            # XXX HW 2.3 Students work here
-            # You need to insert the user into the users collection.
-            # Don't over think this one, it's a straight forward insert.
-
+            self.db.users.insert_one(user)
             print "This space intentionally left blank."
 
-        except pymongo.errors.OperationFailure:
+        except pymongo.errors.OperationFailure as e:
             print "oops, mongo error"
             return False
         except pymongo.errors.DuplicateKeyError as e:
@@ -96,5 +87,3 @@ class UserDAO:
             return False
 
         return True
-
-
