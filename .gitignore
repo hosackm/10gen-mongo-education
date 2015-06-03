@@ -3,3 +3,4 @@ py/venv
 *.zip
 .DS_Store
 mongodb
+*.pyc
