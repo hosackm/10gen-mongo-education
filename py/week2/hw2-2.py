@@ -6,18 +6,18 @@ def main():
     conn = pymongo.MongoClient('mongodb://localhost')
     db = conn.students
 
-    dfilt = {
+    query = {
         'type': 'homework'
     }
-    lsort = [
+    projection = [
         ('student_id', pymongo.ASCENDING),
         ('score', pymongo.ASCENDING)
     ]
 
     try:
-        docs = db.grades.find(dfilt).sort(lsort)
-        evens = [docs[i] for i in xrange(0, docs.count(), 2)]
-        [db.grades.delete_one({'_id': e.get('_id')}) for e in evens]
+        docs = db.grades.find(query).sort(projection)
+        lows = [docs[i] for i in xrange(0, docs.count(), 2)]
+        [db.grades.delete_one({'_id': l.get('_id')}) for l in lows]
     except Exception as e:
         print e
 
